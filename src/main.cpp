@@ -55,12 +55,13 @@ struct ReceiveData {
   int B_BTN;
   int X_BTN;
   int Y_BTN;
+  int DIRECTION;
 };
 // 受信したデータを格納するためのバッファを作成(loopの前に作成するのが適切？)
 uint8_t buffer[sizeof(ReceiveData)];
 // 構造体の宣言後初期値設定(値保持用)
-ReceiveData HoldData = {110, 110, 1, 110, 110, 1, 1, 1, 1, 1};
-ReceiveData LastData = {110, 110, 1, 110, 110, 1, 1, 1, 1, 1};
+ReceiveData HoldData = {110, 110, 1, 110, 110, 1, 1, 1, 1, 1, 0};
+ReceiveData LastData = {110, 110, 1, 110, 110, 1, 1, 1, 1, 1, 0};
 int pwm_value = 110;
 const int inputMax = 255;
 const int inputMin = 136;
@@ -108,6 +109,8 @@ void loop() {
       Serial.print(receiveData.X_BTN);
       Serial.print(" Y_BTN:");
       Serial.print(receiveData.Y_BTN);
+      Serial.print(" DIRECTION:");
+      Serial.print(receiveData.DIRECTION);
       // 値途切れた時用の構造体にコピーしている
       HoldData = receiveData;
       pwm_value = receiveData.X1;
@@ -166,7 +169,7 @@ void loop() {
   else {
     /*値が途切れたとき*/
     communication_count++;
-    if (communication_count >= 100){
+    if (communication_count >= 200){
       digitalWrite(BLUE_LED_PIN, LOW);
       digitalWrite(LED_FORNT_RIGHT_1PIN, LOW);
       digitalWrite(LED_FRONT_RIGHT_2PIN, LOW);
@@ -175,7 +178,22 @@ void loop() {
       ESP.restart();
     }
     pwm_value = HoldData.X1;
-    motor_motion(pwm_value);
+    if (automatic_progress_mode == 0){
+      motor_motion(pwm_value);
+    }else if (automatic_progress_mode == 1){
+      motor_motion(75);
+    }else if (automatic_progress_mode == 2){
+      motor_motion(56);
+    }else if (automatic_progress_mode == 3){
+      motor_motion(37);
+    }else if (automatic_progress_mode == 4){
+      motor_motion(18);
+    }else if (automatic_progress_mode == 5){
+      motor_motion(0);
+    }
+    if (HoldData.B_BTN == 0){
+        tone(PBuzzer_PIN,700,50) ;  // buzzer
+      }
   }
   delay(50);
 }
