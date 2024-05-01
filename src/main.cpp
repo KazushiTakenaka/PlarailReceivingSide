@@ -6,10 +6,7 @@
 #endif
 #include "Secret.h"
 BluetoothSerial SerialBT;
-// put function declarations here:
-// 受信側macアドレス E0:E2:E6:B4:88:D6
-// String MACadd = "44:17:93:43:7E:F2";
-// uint8_t address[6]  = {0x44, 0x17, 0x93, 0x43, 0x7E, 0xF2};
+
 #include <string>
 // #include <iostream>
 const int A_IN1 = 25;
@@ -141,6 +138,14 @@ void loop() {
         motor_motion(18);
       }else if (automatic_progress_mode == 5){
         motor_motion(0);
+      }else if (automatic_progress_mode == -1){
+        motor_motion(170);
+      }else if (automatic_progress_mode == -2){
+        motor_motion(190);
+      }
+      
+      if (receiveData.SW1 == 1 && LastData.SW1 == 0){
+        automatic_progress_mode = 0;
       }
       
       // 自動運転切り替え(X_BTN)
@@ -157,7 +162,7 @@ void loop() {
           //     automatic_mode = 0;
           //   }
           // }
-      }else if (receiveData.Y_BTN == 1 && LastData.Y_BTN == 0 && automatic_progress_mode > 0){
+      }else if (receiveData.Y_BTN == 1 && LastData.Y_BTN == 0 && automatic_progress_mode > -2){
         automatic_progress_mode--;
       }
       
@@ -169,7 +174,7 @@ void loop() {
   else {
     /*値が途切れたとき*/
     communication_count++;
-    if (communication_count >= 200){
+    if (communication_count >= 50){
       digitalWrite(BLUE_LED_PIN, LOW);
       digitalWrite(LED_FORNT_RIGHT_1PIN, LOW);
       digitalWrite(LED_FRONT_RIGHT_2PIN, LOW);
@@ -190,7 +195,12 @@ void loop() {
       motor_motion(18);
     }else if (automatic_progress_mode == 5){
       motor_motion(0);
+    }else if (automatic_progress_mode == -1){
+      motor_motion(170);
+    }else if (automatic_progress_mode == -2){
+      motor_motion(190);
     }
+    
     if (HoldData.B_BTN == 0){
         tone(PBuzzer_PIN,700,50) ;  // buzzer
       }
